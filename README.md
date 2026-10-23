@@ -1,62 +1,33 @@
 🥬 Terroir & Cie - Plateforme de Produits Locaux
 Projet Académique 2024-2025 | Groupe n°23 - GreenBox
 
-Ce projet vise à moderniser la coopérative Terroir & Cie en développant une plateforme web permettant la présentation des produits locaux et la gestion des réservations en ligne (Click & Collect).
-
 👥 L'Équipe (GreenBox)
+
 Ashutosh Man Shrestha
+
 Yuhang Wu
+
 Bilal Salhi 
+
 Emir Emre
 
-📝 Contexte du Projet
-La coopérative belge Terroir & Cie vend des produits locaux (fruits, légumes, viandes) mais gérait ses ventes uniquement sur place. Afin d'améliorer l'expérience client et la visibilité des producteurs, cette solution numérique a été conçue pour :
+Développement d’une plateforme web pour la coopérative belge Terroir & Cie, dans le but de faciliter la vente de produits locaux et de proposer un système de réservation en ligne Click & Collect.
 
-Permettre la réservation en ligne des produits.
-Gérer les stocks en temps réel.
-Faciliter la mise en vente par les producteurs.
-Alléger la charge de travail des bénévoles.
-🚀 Fonctionnalités Principales
-L'application est segmentée par rôles utilisateurs pour garantir une sécurité et une fluidité optimales.
+Fonctionnalités principales :
 
-🌍 Pour Tous (Visiteurs)
-Consultation du catalogue produits avec filtres (nom, type).
-Visualisation des détails des produits et horaires du magasin.
-🛒 Pour les Clients
-Compte personnel : Inscription et connexion sécurisée.
-Réservation : Ajout de produits au panier (provenant de lots différents) et choix de la date de retrait.
-Suivi : Historique des réservations (réservée, récupérée, annulée, abandonnée).
-Annulation : Possibilité d'annuler une commande avant récupération.
-👩‍🌾 Pour les Producteurs
-Gestion des lots : Proposition de nouveaux lots de produits à la vente.
-Suivi : Tableau de bord des lots en vente et vendus.
-Notifications : Réception des validations ou refus des lots par les gestionnaires.
-📦 Pour les Bénévoles (Magasin)
-Gestion des retraits : Validation des commandes récupérées par les clients.
-Gestion des stocks : Marquage des commandes non récupérées comme "Abandonnées" et retrait d'unités invendables.
-📊 Pour les Gestionnaires (Administrateurs)
-Administration : Création de comptes pour producteurs et gestionnaires.
-Validation : Acceptation ou refus des lots proposés par les producteurs.
-Tableau de bord : Statistiques des ventes par mois/année.
-Paramétrage : Gestion des types de produits.
-⚙️ Architecture et Données
-Cycle de Vie d'une Réservation (Machine à états)
-Le système gère rigoureusement l'état des commandes pour assurer la cohérence du stock :
+Consultation du catalogue avec filtres et détails des produits.
 
-Créée : Le client ajoute des articles au panier.
-Réservée : Le client valide la commande (stock bloqué).
-Récupérée : Le client vient chercher sa commande en magasin.
-Annulée : Le client annule sa commande (remise en stock immédiate).
-Abandonnée : Le client ne s'est pas présenté 30 min avant la fermeture (remise en stock automatique).
-Modèle de Données (Résumé)
-L'application repose sur une base de données relationnelle comprenant les entités principales suivantes :
+Inscription et connexion avec différents rôles : client, producteur, bénévole et gestionnaire.
 
-Utilisateurs : Gestion des rôles (Client, Producteur, Gestionnaire, Bénévole).
-Produits & Types : Catalogue de référence.
-Lots_produits : Gestion des stocks apportés par les producteurs (avec statut de validation).
-Réservations & Lignes : Commandes clients liées aux lots spécifiques.
-🎨 Petit aperçu de l'Interface
-L'interface a été pensée pour être fluide et intuitive :
+Panier et réservation de produits avec choix de la date de retrait.
+
+Gestion des stocks, des lots et des propositions des producteurs.
+
+Suivi des commandes : réservation, annulation, récupération ou abandon.
+
+Tableau de bord pour gérer les utilisateurs et consulter les statistiques de vente.
+
+Objectif : Simplifier la gestion de la coopérative et faciliter les réservations pour les clients.
 
 <img width="2874" height="1446" alt="image" src="https://github.com/user-attachments/assets/b351ae64-5279-4653-903b-6f51436318b5" />
 <img width="2874" height="1446" alt="image" src="https://github.com/user-attachments/assets/eb48997f-bf89-48fe-8e02-2a5f7cb72934" />
