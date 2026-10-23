@@ -1,0 +1,27 @@
+services:
+  frontend:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-23/frontend-prod:latest # Remplacer par l'image Docker de votre frontend
+    container_name: frontend-prod
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-23/api-prod:latest # Remplacer par l'image Docker de votre API
+    container_name: api-prod
+    ports:
+      - 3000:3000
+    environment:
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - AZURE_BLOB_SAS_TOKEN=${AZURE_BLOB_SAS_TOKEN}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    entrypoint: ["java", "-jar", "app.jar"]
+
+  reverse-proxy:
+    image: registry.gitlab.com/e-vinci/cae-projects/2025-cae-projects/cae-group-23/reverse-proxy-prod:latest # Remplacer par l'image Docker de votre reverse proxy
+    container_name: reverse-proxy-prod
+    ports:
+      - 80:80

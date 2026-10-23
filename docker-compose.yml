@@ -1,0 +1,52 @@
+services:
+  frontend:
+    container_name: frontend-prod
+    image: frontend-prod
+    build:
+      context: ./frontend
+    ports:
+      - 5172:5172
+    depends_on:
+      - api
+
+  api:
+    container_name: api-prod
+    image: api-prod
+    build: ./api
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    entrypoint: ["java", "-jar", "app.jar", "--spring.profiles.active=test"]
+
+  db:
+    image: postgres:latest
+    container_name: db-test
+    environment:
+      POSTGRES_DB: cae_db
+      POSTGRES_USER: cae_user
+      POSTGRES_PASSWORD: cae123
+    ports:
+      - "5432:5432"
+
+  reverse-proxy:
+    container_name: reverse-proxy-prod
+    image: nginx:alpine
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+      - api
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
+  e2e:
+    container_name: e2e-prod
+    image: e2e-prod
+    build: ./e2e
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - api
+      - frontend
+    entrypoint: ["sh", "-c", "sleep 20 && npx playwright test"]

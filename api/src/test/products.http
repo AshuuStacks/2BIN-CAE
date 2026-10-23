@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:3000
+
+### Login to get token
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "producteur@gmail.com",
+  "password": "Admin&123"
+}
+
+
+### Get all products
+GET {{baseUrl}}/product/all
+
+### Create a product (chou-fleur)
+POST {{baseUrl}}/products/add
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "libelleProduct": "chou-fleur",
+  "description": "Fresh cauliflower",
+  "unite": { "unite": "Kg" },
+  "productType": { "libelleType": "Légumes" }
+}
+
+### Create a product photo
+POST {{baseUrl}}/photos/add
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="productId"
+
+{{productId}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="cauliflower.jpg"
+Content-Type: image/jpeg
+
+< ./cauliflower.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Get all photos for a product
+GET {{baseUrl}}/lots/photos/{{productId}}

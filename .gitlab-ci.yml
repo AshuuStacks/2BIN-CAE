@@ -1,0 +1,127 @@
+stages:
+  - test
+  - build
+  - staging
+  - e2e
+  - production
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  VERSION: $CI_PIPELINE_IID
+  REGISTRY: $CI_REGISTRY
+  REGISTRY_IMAGE_BASE_PATH: $REGISTRY/$CI_PROJECT_PATH
+  AZURE_WEBAPP_RESOURCE_GROUP: caeGroup23
+
+api test:
+  stage: test
+  image: maven:3.9.9-amazoncorretto-21
+  cache:
+    key:
+      files:
+        - api/pom.xml
+    paths:
+      - $CI_PROJECT_DIR/.m2/repository
+  script:
+    - cd api
+    - mvn clean test
+  artifacts:
+    paths:
+      - api/target/reports/
+      - api/target/site/
+      - api/target/surefire-reports/
+
+frontend test:
+  stage: test
+  image: node:20-alpine
+  cache:
+    key:
+      files:
+        - frontend/package-lock.json
+    paths:
+      - frontend/node_modules
+  script:
+    - cd frontend
+    - npm ci
+    - npm run lint
+    - npm run coverage
+  artifacts:
+    paths:
+      - frontend/coverage/
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:20-dind
+  script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker-compose -f docker-compose.staging.yml build
+    - for service in frontend-prod api-prod reverse-proxy-prod; do
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker tag $service $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:latest;
+      docker push $REGISTRY_IMAGE_BASE_PATH/$service:$VERSION;
+      done
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+.deploy:
+  image: mcr.microsoft.com/azure-cli
+  script:
+    - az login --service-principal --username $AZURE_CLIENT_ID --password $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    - az webapp stop --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - az webapp config container set --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP --multicontainer-config-type compose --multicontainer-config-file docker-compose.deploy.yml --container-registry-user $PULL_IMAGE_TOKEN_USERNAME --container-registry-password $PULL_IMAGE_TOKEN_PASSWORD
+    - az webapp start --name $AZURE_WEBAPP_NAME --resource-group $AZURE_WEBAPP_RESOURCE_GROUP
+    - |
+      for i in {1..30}; do
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $BASE_URL/api/lots/all);
+        if [ "$HTTP_STATUS" -eq 200 ]; then
+          echo "Azure Web App is functional."
+          break
+        fi
+        echo "Azure Web App is not ready yet. Waiting for 10 seconds..."
+        sleep 10
+      done
+      if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Azure Web App failed to become functional."
+        exit 1
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+deploy to staging:
+  stage: staging
+  environment: staging
+  variables:
+    AZURE_WEBAPP_NAME: cae-group23-staging-app
+    BASE_URL: https://cae-group23-staging-app-hbf2gxajhrh0dsf7.centralus-01.azurewebsites.net/
+  extends: .deploy
+
+e2e tests:
+  stage: e2e
+  environment: staging
+  variables:
+    BASE_URL: https://cae-group23-staging-app-hbf2gxajhrh0dsf7.centralus-01.azurewebsites.net
+    NODE_ENV: staging
+  image: mcr.microsoft.com/playwright:v1.51.0-jammy
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - cd ./e2e
+    - npm ci
+    - npx playwright test
+    - if [ $? -ne 0 ]; then echo "E2E tests failed"; exit 1; fi
+  artifacts:
+    paths:
+      - e2e/playwright-report/
+      - e2e/test-results/
+
+deploy to production:
+  stage: production
+  environment: production
+  variables:
+    AZURE_WEBAPP_NAME: cae-group23-production-app
+    BASE_URL: https://cae-group23-production-app-gwbfaqbug6aedecz.westeurope-01.azurewebsites.net
+    NODE_ENV: production
+  extends: .deploy
+  when: manual

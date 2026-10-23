@@ -1,0 +1,512 @@
+openapi: 3.1.0
+info:
+  title: CAE Projet API
+  description: API de démonstration pour le cours de CAE exercices
+  version: 1.0.0
+servers:
+  - url: "http://localhost/"
+    description: Serveur local
+paths:
+  /auths/login:
+    post:
+      summary: Connexion
+      description: Connexion d'un utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Credentials"
+      responses:
+        "200":
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticatedUser"
+        "400":
+          description: Requête mal formée
+        "401":
+          description: Identifiants incorrects
+
+  /auths/register:
+    post:
+      summary: Inscription
+      description: Inscription d'un utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+      responses:
+        "200":
+          description: Inscription réussie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticatedUser"
+        "400":
+          description: Requête mal formée
+        "409":
+          description: Utilisateur déjà existant
+
+  /auths/validate-token:
+    get:
+      summary: Valider le token JWT
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Token valide, retourne l'utilisateur authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticatedUser"
+        "401":
+          description: Token invalide ou expiré
+
+  /auths/password:
+    put:
+      summary: Mettre à jour le mot de passe
+      description: Met à jour le mot de passe d'un utilisateur authentifié
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPassword:
+                  type: string
+                  description: Ancien mot de passe
+                password:
+                  type: string
+                  description: Nouveau mot de passe
+              required:
+                - oldPassword
+                - password
+      responses:
+        "200":
+          description: Mot de passe mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthenticatedUser"
+        "400":
+          description: Requête mal formée ou mot de passe vide
+        "401":
+          description: Token invalide ou ancien mot de passe incorrect
+        "404":
+          description: Utilisateur non trouvé après mise à jour
+
+  /prod/add:
+    post:
+      summary: Ajouter un produit
+      description: Ajouter un nouveau produit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewProduit"
+      responses:
+        "201":
+          description: Produit ajouté
+        "409":
+          description: Produit déjà existant
+        "500":
+          description: Erreur serveur
+
+  /prod/all:
+    get:
+      summary: Récupérer tous les produits
+      description: Retourne la liste de tous les produits
+      responses:
+        "200":
+          description: Succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /lots/available:
+    get:
+      summary: Récupérer les lots disponibles
+      description: Retourne la liste des lots en vente
+      responses:
+        "200":
+          description: Succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lot"
+        "500":
+          description: Erreur serveur
+
+  /lots/all:
+    get:
+      summary: Récupérer tous les lots
+      description: Retourne la liste de tous les lots
+      responses:
+        "200":
+          description: Succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lot"
+        "500":
+          description: Erreur serveur
+
+  /lots/pending:
+    get:
+      summary: Récupérer les lots en attente ou acceptés
+      description: Retourne la liste des lots avec le statut 'en attente' ou 'accepté'
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lot"
+        "401":
+          description: Token invalide ou expiré
+        "500":
+          description: Erreur serveur
+
+  /lots/add:
+    post:
+      summary: Ajouter un lot
+      description: Ajouter un nouveau lot avec une image ou un ID de photo existant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                newLot:
+                  $ref: "#/components/schemas/NewLot"
+                image:
+                  type: string
+                  format: binary
+                  description: Image du lot (optionnel si photoId est fourni)
+              required:
+                - newLot
+      responses:
+        "201":
+          description: Lot ajouté
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lot"
+        "400":
+          description: Données invalides ou image/photoId manquant
+        "409":
+          description: Lot déjà existant
+        "500":
+          description: Erreur serveur
+
+  /lots/accept/{idLot}:
+    put:
+      summary: Accepter un lot
+      description: Accepte un lot spécifié par son ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idLot
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lot accepté
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lot"
+        "401":
+          description: Token invalide ou expiré
+        "404":
+          description: Lot non trouvé
+        "500":
+          description: Erreur serveur
+
+  /lots/receive/{idLot}:
+    put:
+      summary: Réceptionner un lot
+      description: Réceptionne un lot spécifié par son ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idLot
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lot réceptionné
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lot"
+        "401":
+          description: Token invalide ou expiré
+        "404":
+          description: Lot non trouvé
+        "500":
+          description: Erreur serveur
+
+  /lots/refuse/{idLot}:
+    put:
+      summary: Refuser un lot
+      description: Refuse un lot spécifié par son ID avec une raison
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idLot
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refusalReason:
+                  type: string
+                  description: Raison du refus
+              required:
+                - refusalReason
+      responses:
+        "200":
+          description: Lot refusé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lot"
+        "400":
+          description: Raison du refus manquante ou invalide
+        "401":
+          description: Token invalide ou expiré
+        "404":
+          description: Lot non trouvé
+        "500":
+          description: Erreur serveur
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Credentials:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    AuthenticatedUser:
+      type: object
+      properties:
+        email:
+          type: string
+        token:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        phonenumber:
+          type: string
+      required:
+        - email
+        - token
+    NewUser:
+      type: object
+      properties:
+        email:
+          type: string
+        lastname:
+          type: string
+        firstname:
+          type: string
+        password:
+          type: string
+        phonenumber:
+          type: string
+        address:
+          $ref: "#/components/schemas/Address"
+        civility:
+          type: string
+      required:
+        - email
+        - password
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        postalcode:
+          type: string
+        number:
+          type: string
+        country:
+          type: string
+        mailbox:
+          type: string
+        city:
+          type: string
+    NewProduit:
+      type: object
+      properties:
+        libelleProduct:
+          type: string
+        description:
+          type: string
+        unite:
+          type: string
+        productType:
+          type: string
+      required:
+        - libelleProduct
+        - unite
+        - productType
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        libelleProduct:
+          type: string
+        description:
+          type: string
+        unite:
+          type: string
+        productType:
+          type: string
+      required:
+        - id
+        - libelleProduct
+        - unite
+        - productType
+    NewLot:
+      type: object
+      properties:
+        idLot:
+          type: integer
+        price:
+          type: number
+        initialQuantity:
+          type: integer
+        soldQuantity:
+          type: integer
+        reservedQuantity:
+          type: integer
+        remainingQuantity:
+          type: integer
+        withdrawnQuantity:
+          type: integer
+        lotStatus:
+          type: string
+          enum: ["en attente", "accepté", "refusé", "en vente"]
+        availableDate:
+          type: string
+          format: date
+        proposalDate:
+          type: string
+          format: date
+        receptionDate:
+          type: string
+          format: date
+        productId:
+          type: integer
+        producerId:
+          type: integer
+        photoId:
+          type: integer
+        responsible:
+          type: integer
+        refusalReason:
+          type: string
+      required:
+        - price
+        - initialQuantity
+        - lotStatus
+        - availableDate
+        - productId
+        - producerId
+    Lot:
+      type: object
+      properties:
+        idLot:
+          type: integer
+        price:
+          type: number
+        initialQuantity:
+          type: integer
+        soldQuantity:
+          type: integer
+        reservedQuantity:
+          type: integer
+        remainingQuantity:
+          type: integer
+        withdrawnQuantity:
+          type: integer
+        lotStatus:
+          type: string
+          enum: ["en attente", "accepté", "refusé", "en vente"]
+        availableDate:
+          type: string
+          format: date
+        proposalDate:
+          type: string
+          format: date
+        receptionDate:
+          type: string
+          format: date
+        product:
+          type: integer
+        producer:
+          type: integer
+        photo:
+          type: integer
+        responsible:
+          type: integer
+        refusalReason:
+          type: string
+      required:
+        - idLot
+        - price
+        - initialQuantity
+        - lotStatus
+        - availableDate
+        - proposalDate
+        - product
+        - producer
+        - photo

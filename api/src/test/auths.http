@@ -1,0 +1,201 @@
+@baseUrl = http://localhost:3000
+
+### Login a user (Success: Get JWT token)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "gestionnaire@gmail.com",
+  "password": "Admin&123"
+}
+
+> {%
+  client.global.set("jwtToken", response.body.token);
+  client.log("JWT Token saved: " + response.body.token);
+%}
+
+### Login a user (Failure: Wrong password)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "gestionnaire@gmail.com",
+  "password": "wrongpassword"
+}
+
+### Login a user (Failure: Invalid credentials)
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+### Register a new user (Success)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "newuser@gmail.com",
+  "firstname": "John",
+  "lastname": "Doe",
+  "password": "Admin&123",
+  "phonenumber": "1234567890",
+  "civility": "Monsieur",
+  "address": {
+    "street": "New Street",
+    "number": "456",
+    "mailbox": "Apt 1A",
+    "postalcode": "10002",
+    "city": "Bruxelles",
+    "country": "Belgique"
+  },
+  "role": "CLIENT"
+}
+
+### Register a new user (Failure: Email already exists)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "ashutosh@gmail.com",
+  "firstname": "John",
+  "lastname": "Doe",
+  "password": "Admin&123",
+  "phonenumber": "1234567890",
+  "civility": "Monsieur",
+  "address": {
+    "street": "New Street",
+    "number": "456",
+    "mailbox": "Apt 1A",
+    "postalcode": "10002",
+    "city": "Bruxelles",
+    "country": "Belgique"
+  },
+  "role": "CLIENT"
+}
+
+### Register a new user (Failure: Invalid data)
+POST {{baseUrl}}/auths/register
+Content-Type: application/json
+
+{
+  "email": "",
+  "firstname": "John",
+  "lastname": "Doe",
+  "password": ""
+}
+
+### Validate JWT token (Success)
+GET {{baseUrl}}/auths/validate-token
+Authorization: Bearer {{jwtToken}}
+
+### Validate JWT token (Failure: Missing token)
+GET {{baseUrl}}/auths/validate-token
+
+### Validate JWT token (Failure: Invalid token)
+GET {{baseUrl}}/auths/validate-token
+Authorization: Bearer invalid.token.here
+
+### Update password (Success)
+PUT {{baseUrl}}/auths/password
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "oldPassword": "Admin&123",
+  "password": "newAdmin&123"
+}
+
+### Update password (Failure: Invalid old password)
+PUT {{baseUrl}}/auths/password
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "oldPassword": "wrongpassword",
+  "password": "newAdmin&123"
+}
+
+### Update password (Failure: Missing new password)
+PUT {{baseUrl}}/auths/password
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "oldPassword": "Admin&123",
+  "password": ""
+}
+
+### Register a manager or producer (Success)
+POST {{baseUrl}}/auths/register-manager-producer
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "email": "newproducer@gmail.com",
+  "firstname": "Jane",
+  "lastname": "Smith",
+  "password": "Admin&123",
+  "phonenumber": "0987654321",
+  "civility": "Madame",
+  "address": {
+    "street": "Producer Street",
+    "number": "789",
+    "mailbox": "Apt 2B",
+    "postalcode": "10003",
+    "city": "Bruxelles",
+    "country": "Belgique"
+  },
+  "role": "PRODUCTEUR",
+  "nomEntreprise": "Organic Farms"
+}
+
+### Register a manager or producer (Failure: Invalid role)
+POST {{baseUrl}}/auths/register-manager-producer
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "email": "invalidrole@gmail.com",
+  "firstname": "Jane",
+  "lastname": "Smith",
+  "password": "Admin&123",
+  "phonenumber": "0987654321",
+  "civility": "Madame",
+  "address": {
+    "street": "Producer Street",
+    "number": "789",
+    "mailbox": "Apt 2B",
+    "postalcode": "10003",
+    "city": "Bruxelles",
+    "country": "Belgique"
+  },
+  "role": "CLIENT",
+  "nomEntreprise": "Organic Farms"
+}
+
+### Register a manager or producer (Failure: Email already exists)
+POST {{baseUrl}}/auths/register-manager-producer
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "email": "producteur@gmail.com",
+  "firstname": "Jane",
+  "lastname": "Smith",
+  "password": "Admin&123",
+  "phonenumber": "0987654321",
+  "civility": "Madame",
+  "address": {
+    "street": "Producer Street",
+    "number": "789",
+    "mailbox": "Apt 2B",
+    "postalcode": "10003",
+    "city": "Bruxelles",
+    "country": "Belgique"
+  },
+  "role": "PRODUCTEUR",
+  "nomEntreprise": "Organic Farms"
+}

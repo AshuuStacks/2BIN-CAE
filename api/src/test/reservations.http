@@ -1,0 +1,106 @@
+@baseUrl = http://localhost:3000
+
+### Login as client to get token
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "client@gmail.be",
+  "password": "admin"
+}
+
+### Login as producer to create product and lot
+POST {{baseUrl}}/auths/login
+Content-Type: application/json
+
+{
+  "email": "client@gmail.be",
+  "password": "admin"
+}
+
+
+### Create a product (chou-fleur)
+POST {{baseUrl}}/products/add
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "libelleProduct": "chou-fleur",
+  "description": "Fresh cauliflower",
+  "unite": { "unite": "kg" },
+  "productType": { "libelleType": "Vegetable" }
+}
+
+
+### Create a product photo
+POST {{baseUrl}}/photos/add
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="productId"
+
+{{productId}}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="cauliflower.jpg"
+Content-Type: image/jpeg
+
+< ./cauliflower.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# Save the 'idPhoto' from the response as 'photoId' in env.json
+
+### Create a lot (chou-fleur)
+POST {{baseUrl}}/lots/add
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="newLot"
+
+{
+  "price": 7,
+  "initialQuantity": 150,
+  "productId": {{productId}},
+  "producerId": {{producerId}},
+  "lotStatus": "en vente",
+  "availableDate": "2025-04-23",
+  "photoId": {{photoId}},
+  "soldQuantity": 0,
+  "reservedQuantity": 0,
+  "remainingQuantity": 150,
+  "withdrawnQuantity": 0
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+# Save the 'idLot' from the response as 'lotId' in env.json
+
+### Create a reservation
+POST {{baseUrl}}/reservations
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "dateReservation": "2025-04-23",
+  "dateRecuperation": "2025-04-24",
+  "etatReservation": "En cours",
+  "reservationLotsProduits": [
+    {
+      "lotId": { "idLot": {{lotId}} },
+      "quantite": 10
+    }
+  ]
+}
+
+
+### Get reservations for a client
+GET {{baseUrl}}/reservations/client/{{clientId}}
+Authorization: Bearer {{token}}
+
+### Get a specific reservation
+GET {{baseUrl}}/reservations/{{idReservation}}
+Authorization: Bearer {{token}}
+
+### Cancel a reservation
+PATCH {{baseUrl}}/reservations/{{idReservation}}/cancel
+Authorization: Bearer {{token}}

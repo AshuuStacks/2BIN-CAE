@@ -1,0 +1,9 @@
+#### Authentifier l'utilisateur pour obtenir un token
+@baseUrl = http://localhost:3000
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "producteur@gmail.com",
+  "password": "Admin&123"
+}
