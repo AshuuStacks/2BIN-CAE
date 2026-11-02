@@ -1,30 +1,15 @@
 🥬 Terroir & Cie - Plateforme de Produits Locaux
 Projet Académique 2024-2025 | Groupe n°23 - GreenBox
 
-👥 L'Équipe (GreenBox)
-
-Ashutosh Man Shrestha
-
-Yuhang Wu
-
-Bilal Salhi 
-
-Emir Emre
-
 Développement d’une plateforme web pour la coopérative belge Terroir & Cie, dans le but de faciliter la vente de produits locaux et de proposer un système de réservation en ligne Click & Collect.
 
 Fonctionnalités principales :
 
 Consultation du catalogue avec filtres et détails des produits.
-
 Inscription et connexion avec différents rôles : client, producteur, bénévole et gestionnaire.
-
 Panier et réservation de produits avec choix de la date de retrait.
-
 Gestion des stocks, des lots et des propositions des producteurs.
-
 Suivi des commandes : réservation, annulation, récupération ou abandon.
-
 Tableau de bord pour gérer les utilisateurs et consulter les statistiques de vente.
 
 Objectif : Simplifier la gestion de la coopérative et faciliter les réservations pour les clients.
